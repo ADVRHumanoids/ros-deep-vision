@@ -99,6 +99,10 @@ Start the input server that does point cloud segmentation
 
     $ roslaunch ros_deep_vision input_server.launch
 
+Or directly
+
+    $ ./ros-deep-vision/build/devel/lib/ros_deep_vision/input_server
+
 Start rviz
 
     $ roslaunch ros_deep_vision rviz.launch
