@@ -19,10 +19,12 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
 )
 
+
+
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 find_package(Boost REQUIRED)
-find_package(OpenCV REQUIRED)
+find_package(OpenCV 2.4.8 EXACT REQUIRED)
 find_package(VTK REQUIRED)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -128,6 +130,8 @@ add_dependencies(input_server ros_deep_vision_generate_messages_cpp)
 # target_link_libraries(temp_node
 #   ${catkin_LIBRARIES}
 # )
+
+
 
 target_link_libraries(input_server
   ${catkin_LIBRARIES}

@@ -53,7 +53,7 @@
 #include <string>
 #include <fstream>
 
-using namespace cv;
+//using namespace cv;
 using namespace std;
 using namespace message_filters;
 namespace enc = sensor_msgs::image_encodings;

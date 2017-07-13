@@ -37,7 +37,7 @@ main (int argc, char** argv)
   }
   cout << "dataset: " << dataset << endl;
 
-  PointCloudManager point_cloud_manager("/asus/rgb/image_raw","/asus/depth/image_raw","/asus/depth_registered/points", dataset, true);
+  PointCloudManager point_cloud_manager("/camera/rgb/image_raw","/camera/depth/image_raw","/camera/depth_registered/points", dataset, true);
 
   string file_name = "";
 
@@ -47,7 +47,9 @@ main (int argc, char** argv)
     point_cloud_manager.debug_multi(file_name);
   }
 
-  ros::spin();
-
+  while(ros::ok()){
+//	cout << "you spin me once once baby once once! " << endl;
+        ros::spinOnce();
+  }
 
 }

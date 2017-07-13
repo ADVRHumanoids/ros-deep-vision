@@ -54,15 +54,19 @@ class DataCollector:
     def __init__(self, path):
 
         self.bridge = CvBridge()
-        self.camera_frame = "r2/cal_asus_frame" #"/r2/head/asus_depth_optical_frame"
+        self.camera_frame = "camera_rgb_optical_frame" #"/r2/head/asus_depth_optical_frame"
 
         self.lock = threading.Lock()
         self.path = path
 
+	self.rgb_image = 0
+	self.depth_image = 0
+        self.mask_image = 0		
+
         # self.rgb_sub = rospy.Subscriber("/r2/head/asus/rgb/image_raw",Image,self.rgb_callback,queue_size=1)
         # self.depth_sub = rospy.Subscriber("/r2/head/asus/depth/image_raw",Image,self.depth_callback,queue_size=1)
-        self.rgb_sub = rospy.Subscriber("/asus/rgb/image_raw",Image,self.rgb_callback,queue_size=1)
-        self.depth_sub = rospy.Subscriber("/asus/depth/image_raw",Image,self.depth_callback,queue_size=1)
+        self.rgb_sub = rospy.Subscriber("/camera/rgb/image_raw",Image,self.rgb_callback,queue_size=1)
+        self.depth_sub = rospy.Subscriber("/camera/depth/image_raw",Image,self.depth_callback,queue_size=1)
 
 
         self.mask_sub = rospy.Subscriber("/image_mask",Image, self.mask_callback, queue_size=1)

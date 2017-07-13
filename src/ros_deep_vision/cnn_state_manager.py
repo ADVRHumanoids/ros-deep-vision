@@ -102,10 +102,10 @@ class CNNStateManager:
             self.data_monster.input_manager.load_img_mask_pc(data, self.path + '/current/')
             time.sleep(0.1)
 
-        cv2.imshow("img_"+item_name, data.img[:,:,(2,1,0)])
-        cv2.imshow("mask_"+item_name, data.mask)
+        #cv2.imshow("img_"+item_name, data.img[:,:,(2,1,0)])
+        #cv2.imshow("mask_"+item_name, data.mask)
         cv2.imwrite(self.path + '/current/' + data.name + "_" + item_name + "_rgb_crop.png", data.img[:, :, (2,1,0)])
-        cv2.waitKey(100)
+        #cv2.waitKey(100)
 
         # generate grasp points
         if state_list == None:
@@ -168,13 +168,13 @@ class CNNStateManager:
                 self.data_monster.input_manager.load_img_mask_pc_seg(data, self.path + '/current/', item_num)
                 time.sleep(0.1)
 
-            cv2.imshow("img_"+item_name, data.img[:,:,(2,1,0)])
-            cv2.imshow("mask_"+item_name, data.mask)
+            #cv2.imshow("img_"+item_name, data.img[:,:,(2,1,0)])
+            #cv2.imshow("mask_"+item_name, data.mask)
             img_name = self.path + '/current/' + data.name + "_" + item_name + "_rgb.png"
             cv2.imwrite(img_name, data.img[:, :, (2,1,0)])
             img_name_list.append(img_name)
 
-            cv2.waitKey(50)
+            #cv2.waitKey(50)
 
             # generate grasp points
             if expected_aspect_list == None:

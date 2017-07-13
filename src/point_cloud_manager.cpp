@@ -5,7 +5,7 @@
  *      Author: lku
  */
 #include <ros_deep_vision/point_cloud_manager.h>
-
+#include <opencv2/opencv.hpp>
 
 boost::mutex mask_point_cloud_mutex;
 
@@ -25,7 +25,7 @@ PointCloudManager::PointCloudManager(string image_topic, string depth_topic, str
   mm_depth_ = mm_depth;
   dilation_elem = 2;
 
-  sync_ = new Synchronizer<MySyncPolicy>(MySyncPolicy(10), *image_sub_, *depth_sub_, *point_cloud_sub_);
+  sync_ = new Synchronizer<MySyncPolicy>(MySyncPolicy(1000), *image_sub_, *depth_sub_, *point_cloud_sub_);
   sync_->registerCallback(boost::bind(&PointCloudManager::callback, this, _1, _2, _3));
 
   cout << "synchronizer ready" << endl;
@@ -34,7 +34,7 @@ PointCloudManager::PointCloudManager(string image_topic, string depth_topic, str
   save_data_service_multi_ = node_.advertiseService("save_point_cloud_multi", &PointCloudManager::handle_save_data_multi, this);
   show_cloud_service_ = node_.advertiseService("show_point_cloud", &PointCloudManager::handle_show_cloud, this);
 //  get_centroid_service_ = node_.advertiseService("get_centroid", &PointCloudManager::handle_get_centroid, this);
-  point_pub_ =  node_.advertise<visualization_msgs::Marker>("/point_cloud_center", 10);
+  point_pub_ =  node_.advertise<visualization_msgs::Marker>("/point_cloud_center", 10);  
 }
 
 PointCloudManager::~PointCloudManager() {
@@ -44,7 +44,7 @@ PointCloudManager::~PointCloudManager() {
 bool PointCloudManager::visualize(Eigen::Vector4f point)
 {
   visualization_msgs::Marker marker;
-  marker.header.frame_id = "/r2/head/asus_depth_optical_frame";//"r2/robot_reference"; //"r2/simulated_asus_depth_frame";//
+  marker.header.frame_id = "/camera_rgb_optical_frame";//"r2/robot_reference"; //"r2/simulated_asus_depth_frame";//
   marker.header.stamp = ros::Time::now();
   marker.ns = "sift";
   marker.type = visualization_msgs::Marker::SPHERE;
@@ -77,12 +77,32 @@ void PointCloudManager::callback(const sensor_msgs::ImageConstPtr& image, const 
       //OpenCV expects color images to use BGR channel order.
 
 //        boost::mutex::scoped_lock lock(sift_depth_mutex);
-//      cout << "got callback" << endl;
-      cout << ".";
+      //cout << "got callback" << endl;
+      cout << "." << endl;
       cout.flush();
-      image_ptr_ = cv_bridge::toCvCopy(image, enc::BGR8);
+    
+      cout << image->height << endl;
+      cout << image->width << endl;
+      cout << image->step << endl;	
+      cout << image->data.size() << endl;
+	 
+      image_ptr_ = cv_bridge::toCvCopy(image, sensor_msgs::image_encodings::BGR8);
+      //sensor_msgs::Image fake;
+      //fake.height = image->height;
+      //fake.width = image->width;
+      //fake.header = image->header;
+      //fake.encoding = image->encoding;
+      //fake.step = image->step;
+      //fake.data = image->data;
+      //image_ptr_ = cv_bridge::toCvShare(image, sensor_msgs::image_encodings::BGR8);
+      cout << "image" << endl;
+      //cv_bridge::CvImageConstPtr test_cv;
+      //test_cv = cv_bridge::toCvShare(image, sensor_msgs::image_encodings::MONO8);
+      
       depth_ptr_ = cv_bridge::toCvCopy(depth, enc::TYPE_32FC1);
+      cout << "depth" << endl;
       cv_bridge::CvImagePtr mask_ptr_ = cv_bridge::toCvCopy(depth, enc::TYPE_32FC1);
+      cout << "mask" << endl;
       if (mm_depth_)
       {
         depth_ptr_->image = depth_ptr_->image / float(1000);
@@ -378,15 +398,15 @@ void PointCloudManager::dilation(cv::Mat& mask)
 {
   int dilation_type;
   int dilation_size = 5;
-  if( dilation_elem == 0 ){ dilation_type = MORPH_RECT; }
-  else if( dilation_elem == 1 ){ dilation_type = MORPH_CROSS; }
-  else if( dilation_elem == 2) { dilation_type = MORPH_ELLIPSE; }
+  if( dilation_elem == 0 ){ dilation_type = cv::MORPH_RECT; }
+  else if( dilation_elem == 1 ){ dilation_type = cv::MORPH_CROSS; }
+  else if( dilation_elem == 2) { dilation_type = cv::MORPH_ELLIPSE; }
 
-  Mat element = getStructuringElement( dilation_type,
-                                       Size( 2*dilation_size + 1, 2*dilation_size+1 ),
-                                       Point( dilation_size, dilation_size ) );
+  cv::Mat element = getStructuringElement( dilation_type,
+                                       cv::Size( 2*dilation_size + 1, 2*dilation_size+1 ),
+                                       cv::Point( dilation_size, dilation_size ) );
   /// Apply the dilation operation
-  Mat dilated_mask;
+  cv::Mat dilated_mask;
   dilate( mask, dilated_mask, element );
   mask = dilated_mask;
 }
@@ -459,7 +479,7 @@ bool PointCloudManager::handle_show_cloud(ros_deep_vision::String2::Request &req
   sensor_msgs::PointCloud2 point_cloud ;
 
   pcl::toROSMsg(*cloud_ptr, point_cloud);
-  point_cloud.header.frame_id = "/r2/head/asus_depth_optical_frame";//simulated_asus_frame";
+  point_cloud.header.frame_id = "camera_rgb_optical_frame";//simulated_asus_frame";
   cloud_pub_.publish(point_cloud);
   res.result = 0;
 
@@ -533,7 +553,7 @@ bool PointCloudManager::debug_multi(string file_name)
   this->remove_boarder(mask_image);
   this->dilation(mask_image);
 
-  cv::imshow("output", mask_image);
+  //cv::imshow("output", mask_image);
   cv::waitKey(0);
 
   this->save_cluster_box(cloud_ptr, ros_path_ + current_folder_ + file_name + "_debug");
